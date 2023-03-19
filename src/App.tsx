@@ -1,14 +1,10 @@
+import {
+  Configuration,
+  ChatCompletionRequestMessage as Message,
+  OpenAIApi,
+  ChatCompletionRequestMessageRoleEnum as Role,
+} from 'openai';
 import { useEffect, useRef, useState } from 'react';
-
-type Conversation = {
-  request: {
-    prompt: string;
-  };
-  response: {
-    id: string;
-    text: string;
-  };
-};
 
 function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -16,8 +12,10 @@ function App() {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [openai, setOpenai] = useState<OpenAIApi | null>(null);
   const [inputText, setInputText] = useState('');
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -33,26 +31,44 @@ function App() {
     }
   }, [inputText]);
 
+  useEffect(() => {
+    setOpenai(new OpenAIApi(new Configuration({ apiKey })));
+  }, [apiKey]);
+
   const closeInputModal = () => {
     setShowApiKeyModal(false);
     setShowApiKey(false);
   };
 
-  const sendMessage = () => {
-    setConversations([
-      ...conversations,
-      {
-        request: {
-          prompt: inputText,
-        },
-        response: {
-          id: '1',
-          text: '안녕하세요. 저는 챗봇입니다.',
-        },
-      },
-    ]);
+  const sendMessage = async () => {
+    if (isLoading) {
+      return;
+    }
 
+    if (!openai) {
+      throw new Error();
+    }
+
+    const newMessages = [...messages, { role: Role.User, content: inputText }];
+
+    setMessages(newMessages);
     setInputText('');
+    setIsLoading(true);
+
+    const response = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: newMessages,
+    });
+
+    setIsLoading(false);
+
+    const responseMessage = response.data.choices[0].message;
+
+    if (!responseMessage) {
+      throw new Error();
+    }
+
+    setMessages([...newMessages, responseMessage]);
   };
 
   return (
@@ -72,24 +88,22 @@ function App() {
 
         <div className="flex-1 h-full flex flex-col">
           <div className="flex-1 overflow-scroll">
-            {conversations.map((conversation, index) => {
-              return (
-                <div key={index}>
-                  <div className="bg-neutral-100 px-6 py-4">
-                    <p className="break-word whitespace-pre-wrap">{conversation.request.prompt}</p>
-                  </div>
-                  <div className="bg-neutral-200 px-6 py-4 flex">
-                    <p>{'👉'}</p>
-                    <p className="ml-2">{conversation.response.text}</p>
-                  </div>
+            {messages.map((message, index) =>
+              message.role === Role.User ? (
+                <div key={index} className="bg-neutral-100 px-6 py-4">
+                  <p className="break-word whitespace-pre-wrap">{message.content}</p>
                 </div>
-              );
-            })}
+              ) : (
+                <div key={index} className="bg-neutral-200 px-6 py-4 flex">
+                  <p className="ml-2 break-word whitespace-pre-wrap">{'👉 ' + message.content}</p>
+                </div>
+              ),
+            )}
           </div>
 
-          <div className="w-full bg-neutral-500 p-4 flex items-center relative">
+          <div className="w-full bg-neutral-500 p-4 flex items-center">
             <textarea
-              className="w-full resize-none p-4"
+              className="flex-1 resize-none p-4 rounded-l"
               ref={textareaRef}
               value={inputText}
               placeholder="ChatGPT에게 질문해보세요."
@@ -102,8 +116,8 @@ function App() {
                 }
               }}
             />
-            <button className="absolute right-8" onClick={sendMessage}>
-              Send
+            <button className="w-20 h-full rounded-r bg-white" onClick={sendMessage}>
+              {isLoading ? '...' : 'Send'}
             </button>
           </div>
         </div>
