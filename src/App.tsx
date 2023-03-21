@@ -181,16 +181,16 @@ function App() {
 
       {showApiKeyModal && (
         <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 flex items-center justify-center">
-          <div className="w-4/5 max-w-sm bg-white px-8 py-6 rounded-lg relative">
+          <div className="w-4/5 max-w-sm bg-white px-8 py-6 rounded-lg flex flex-col items-center relative">
             <p>OpenAI API Key를 입력해주세요.</p>
             <a
-              className="text-neutral-500 text-xs underline"
+              className="text-neutral-500 text-xs underline mt-2"
               href="https://jongwan56.notion.site/OpenAI-API-Key-d671160525e94ed68f2f8b812b98ce9a"
               target="_blank"
             >
               API Key가 뭔가요...?
             </a>
-            <div className="w-full h-8 mt-4 flex items-center">
+            <div className="w-full h-8 mt-6 flex items-center">
               <input
                 className="flex-1 h-full rounded-l pl-2 border-[1px] border-r-0 border-neutral-300 text-xs"
                 value={apiKeyTemp}
@@ -208,43 +208,41 @@ function App() {
                 <p className="text-xs font-light">{showApiKey ? '가리기' : '보기'}</p>
               </button>
             </div>
-            <div className="flex justify-center">
-              <button
-                className="w-16 h-8 rounded bg-green-600 disabled:opacity-70 mt-6"
-                disabled={apiKeyLoading}
-                onClick={async () => {
-                  if (!apiKeyTemp) {
-                    return;
-                  }
+            <button
+              className="w-16 h-8 rounded bg-green-600 disabled:opacity-70 mt-6"
+              disabled={apiKeyLoading}
+              onClick={async () => {
+                if (!apiKeyTemp) {
+                  return;
+                }
 
-                  setApiKeyLoading(true);
+                setApiKeyLoading(true);
 
-                  try {
-                    const response = await fetch('https://api.openai.com/v1/models', {
-                      headers: { Authorization: `Bearer ${apiKeyTemp}` },
-                    });
+                try {
+                  const response = await fetch('https://api.openai.com/v1/models', {
+                    headers: { Authorization: `Bearer ${apiKeyTemp}` },
+                  });
 
-                    const data = (await response.json()).data as { id: string }[];
+                  const data = (await response.json()).data as { id: string }[];
 
-                    const models = data
-                      .filter((model) => model.id.includes('gpt-'))
-                      .map((model) => model.id);
+                  const models = data
+                    .filter((model) => model.id.includes('gpt-'))
+                    .map((model) => model.id);
 
-                    setApiKey(apiKeyTemp);
-                    setApiKeyTemp('');
-                    setPossibleModels(models);
-                    setShowApiKey(false);
-                    setShowApiKeyModal(false);
-                  } catch {
-                    alert('API Key를 다시 확인해주세요!');
-                  } finally {
-                    setApiKeyLoading(false);
-                  }
-                }}
-              >
-                <p className="text-xs text-white">{apiKeyLoading ? '확인 중' : '확인'}</p>
-              </button>
-            </div>
+                  setApiKey(apiKeyTemp);
+                  setApiKeyTemp('');
+                  setPossibleModels(models);
+                  setShowApiKey(false);
+                  setShowApiKeyModal(false);
+                } catch {
+                  alert('API Key를 다시 확인해주세요!');
+                } finally {
+                  setApiKeyLoading(false);
+                }
+              }}
+            >
+              <p className="text-xs text-white">{apiKeyLoading ? '확인 중' : '확인'}</p>
+            </button>
             {apiKey && (
               <button
                 className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center"
