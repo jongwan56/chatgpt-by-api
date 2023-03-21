@@ -19,9 +19,19 @@ function App() {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [apiKeyTemp, setApiKeyTemp] = useState('');
+  const [apiKeyLoading, setApiKeyLoading] = useState(false);
+  const [model, setModel] = useState('gpt-3.5-turbo');
+  const [possibleModels, setPossibleModels] = useState<string[]>([]);
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!apiKey) {
+      setShowApiKeyModal(true);
+    }
+  }, [apiKey]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -60,7 +70,7 @@ function App() {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model,
         messages: inputMessages,
         stream: true,
       }),
@@ -102,6 +112,16 @@ function App() {
     <>
       <div className="h-screen flex">
         <div className="w-64 h-full bg-neutral-800 p-4 flex flex-col justify-end items-center">
+          {apiKey && (
+            <>
+              <p className="text-white font-mono mb-4">
+                <span>API Key: </span>
+                <span className="font-mono text-neutral-400">
+                  {apiKey.substring(0, 3) + '...' + apiKey.substring(apiKey.length - 4)}
+                </span>
+              </p>
+            </>
+          )}
           <button
             className="w-full h-12 bg-white rounded"
             onClick={() => {
@@ -109,7 +129,7 @@ function App() {
               setShowApiKeyModal(true);
             }}
           >
-            <p className="text-black">OpenAI API Key 입력하기</p>
+            <p className="text-black">OpenAI API Key 변경</p>
           </button>
         </div>
 
@@ -153,30 +173,16 @@ function App() {
       </div>
 
       {showApiKeyModal && (
-        <div
-          className="fixed top-0 left-0 w-screen h-screen bg-black/50 flex items-center justify-center"
-          onClick={closeInputModal}
-        >
-          <div
-            className="w-4/5 max-w-sm bg-white px-8 pt-6 pb-8 relative rounded-lg"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            <button
-              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center"
-              onClick={closeInputModal}
-            >
-              <img className="w-4 h-4" src="https://www.svgrepo.com/show/507886/x-alt.svg" />
-            </button>
+        <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 flex items-center justify-center">
+          <div className="w-4/5 max-w-sm bg-white px-8 py-6 rounded-lg relative">
             <p>OpenAI API Key를 입력해주세요.</p>
             <div className="w-full h-8 mt-4 flex items-center">
               <input
                 className="flex-1 h-full rounded-l pl-2 border-[1px] border-r-0 border-neutral-300 text-xs"
-                value={apiKey}
+                value={apiKeyTemp}
                 type={showApiKey ? 'text' : 'password'}
                 onChange={(e) => {
-                  setApiKey(e.target.value);
+                  setApiKeyTemp(e.target.value);
                 }}
               />
               <button
@@ -188,6 +194,55 @@ function App() {
                 <p className="text-xs font-light">{showApiKey ? '가리기' : '보기'}</p>
               </button>
             </div>
+            <div className="flex justify-center">
+              <button
+                className="w-16 h-8 rounded bg-green-600 disabled:opacity-70 mt-6"
+                disabled={apiKeyLoading}
+                onClick={async () => {
+                  if (!apiKeyTemp) {
+                    return;
+                  }
+
+                  setApiKeyLoading(true);
+
+                  try {
+                    const response = await fetch('https://api.openai.com/v1/models', {
+                      headers: { Authorization: `Bearer ${apiKeyTemp}` },
+                    });
+
+                    const data = (await response.json()).data as { id: string }[];
+
+                    const models = data
+                      .filter((model) => model.id.includes('gpt-'))
+                      .map((model) => model.id);
+
+                    setApiKey(apiKeyTemp);
+                    setApiKeyTemp('');
+                    setPossibleModels(models);
+                    setShowApiKey(false);
+                    setShowApiKeyModal(false);
+                  } catch {
+                    alert('API Key를 다시 확인해주세요!');
+                  } finally {
+                    setApiKeyLoading(false);
+                  }
+                }}
+              >
+                <p className="text-xs text-white">{apiKeyLoading ? '확인 중' : '확인'}</p>
+              </button>
+            </div>
+            {apiKey && (
+              <button
+                className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center"
+                onClick={() => {
+                  setApiKeyTemp('');
+                  setShowApiKeyModal(false);
+                  setShowApiKey(false);
+                }}
+              >
+                <img className="w-4 h-4" src="https://www.svgrepo.com/show/507886/x-alt.svg" />
+              </button>
+            )}
           </div>
         </div>
       )}
