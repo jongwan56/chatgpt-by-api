@@ -76,6 +76,13 @@ function App() {
       }),
     });
 
+    if (response.status === 429) {
+      alert('API 요청 제한을 초과했습니다.\nOpenAI 계정에 결제 정보가 등록되었는지 확인해주세요.');
+      setMessages(inputMessages.slice(0, inputMessages.length - 1));
+      setIsLoading(false);
+      return;
+    }
+
     if (!response.body) {
       throw new Error();
     }
