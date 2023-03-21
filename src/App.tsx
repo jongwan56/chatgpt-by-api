@@ -183,6 +183,13 @@ function App() {
         <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 flex items-center justify-center">
           <div className="w-4/5 max-w-sm bg-white px-8 py-6 rounded-lg relative">
             <p>OpenAI API Key를 입력해주세요.</p>
+            <a
+              className="text-neutral-500 text-xs underline"
+              href="https://jongwan56.notion.site/OpenAI-API-Key-d671160525e94ed68f2f8b812b98ce9a"
+              target="_blank"
+            >
+              API Key가 뭔가요...?
+            </a>
             <div className="w-full h-8 mt-4 flex items-center">
               <input
                 className="flex-1 h-full rounded-l pl-2 border-[1px] border-r-0 border-neutral-300 text-xs"
