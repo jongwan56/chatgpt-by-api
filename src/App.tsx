@@ -1,10 +1,17 @@
-import {
-  Configuration,
-  ChatCompletionRequestMessage as Message,
-  OpenAIApi,
-  ChatCompletionRequestMessageRoleEnum as Role,
-} from 'openai';
 import { useEffect, useRef, useState } from 'react';
+
+type Message = {
+  role: 'assistant' | 'user';
+  content: string;
+};
+
+const parseJson = (str: string) => {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return undefined;
+  }
+};
 
 function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -12,7 +19,6 @@ function App() {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState('');
-  const [openai, setOpenai] = useState<OpenAIApi | null>(null);
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,10 +37,6 @@ function App() {
     }
   }, [inputText]);
 
-  useEffect(() => {
-    setOpenai(new OpenAIApi(new Configuration({ apiKey })));
-  }, [apiKey]);
-
   const closeInputModal = () => {
     setShowApiKeyModal(false);
     setShowApiKey(false);
@@ -45,30 +47,55 @@ function App() {
       return;
     }
 
-    if (!openai) {
-      throw new Error();
-    }
+    const inputMessages = [...messages, { role: 'user' as const, content: inputText }];
 
-    const newMessages = [...messages, { role: Role.User, content: inputText }];
-
-    setMessages(newMessages);
+    setMessages(inputMessages);
     setInputText('');
     setIsLoading(true);
 
-    const response = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages: newMessages,
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: inputMessages,
+        stream: true,
+      }),
     });
 
-    setIsLoading(false);
-
-    const responseMessage = response.data.choices[0].message;
-
-    if (!responseMessage) {
+    if (!response.body) {
       throw new Error();
     }
 
-    setMessages([...newMessages, responseMessage]);
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+
+    const responseMessage = {
+      role: 'assistant' as const,
+      content: '',
+    };
+
+    setMessages([...inputMessages, responseMessage]);
+
+    while (true) {
+      const { value, done } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      for (const data of value.split('data: ')) {
+        const delta = parseJson(data)?.choices?.[0]?.delta?.content;
+        if (delta) {
+          responseMessage.content += delta;
+          setMessages([...inputMessages, responseMessage]);
+        }
+      }
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -89,13 +116,15 @@ function App() {
         <div className="flex-1 h-full flex flex-col">
           <div className="flex-1 overflow-scroll">
             {messages.map((message, index) =>
-              message.role === Role.User ? (
+              message.role === 'user' ? (
                 <div key={index} className="bg-neutral-100 px-6 py-4">
-                  <p className="break-word whitespace-pre-wrap">{message.content}</p>
+                  <p className="break-word whitespace-pre-wrap">{message.content.trim()}</p>
                 </div>
               ) : (
                 <div key={index} className="bg-neutral-200 px-6 py-4 flex">
-                  <p className="ml-2 break-word whitespace-pre-wrap">{'👉 ' + message.content}</p>
+                  <p className="ml-2 break-word whitespace-pre-wrap">
+                    {'👉 ' + message.content.trim()}
+                  </p>
                 </div>
               ),
             )}
