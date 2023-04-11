@@ -28,12 +28,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
+            ["@types/dedent", "npm:0.7.0"],\
             ["@types/react", "npm:18.0.28"],\
             ["@types/react-dom", "npm:18.0.11"],\
             ["@typescript-eslint/eslint-plugin", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:5.55.0"],\
             ["@typescript-eslint/parser", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:5.55.0"],\
             ["@vitejs/plugin-react-swc", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.2.0"],\
             ["autoprefixer", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:10.4.14"],\
+            ["dedent", "npm:0.7.0"],\
             ["eslint", "npm:8.36.0"],\
             ["eslint-config-prettier", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:8.7.0"],\
             ["eslint-import-resolver-typescript", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.5.3"],\
@@ -528,6 +530,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@tootallnate-once-npm-2.0.0-e36cf4f140-ad87447820.zip/node_modules/@tootallnate/once/",\
           "packageDependencies": [\
             ["@tootallnate/once", "npm:2.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@types/dedent", [\
+        ["npm:0.7.0", {\
+          "packageLocation": "./.yarn/cache/@types-dedent-npm-0.7.0-6255895dfd-b9b7f0c42d.zip/node_modules/@types/dedent/",\
+          "packageDependencies": [\
+            ["@types/dedent", "npm:0.7.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -1252,12 +1263,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["chatgpt-by-api", "workspace:."],\
+            ["@types/dedent", "npm:0.7.0"],\
             ["@types/react", "npm:18.0.28"],\
             ["@types/react-dom", "npm:18.0.11"],\
             ["@typescript-eslint/eslint-plugin", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:5.55.0"],\
             ["@typescript-eslint/parser", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:5.55.0"],\
             ["@vitejs/plugin-react-swc", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.2.0"],\
             ["autoprefixer", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:10.4.14"],\
+            ["dedent", "npm:0.7.0"],\
             ["eslint", "npm:8.36.0"],\
             ["eslint-config-prettier", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:8.7.0"],\
             ["eslint-import-resolver-typescript", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.5.3"],\
@@ -1425,6 +1438,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packagePeers": [\
             "@types/supports-color",\
             "supports-color"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["dedent", [\
+        ["npm:0.7.0", {\
+          "packageLocation": "./.yarn/cache/dedent-npm-0.7.0-2dbb45a4c5-87de191050.zip/node_modules/dedent/",\
+          "packageDependencies": [\
+            ["dedent", "npm:0.7.0"]\
           ],\
           "linkType": "HARD"\
         }]\

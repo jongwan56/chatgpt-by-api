@@ -410,6 +410,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dedent@npm:0.7.0":
+  version: 0.7.0
+  resolution: "@types/dedent@npm:0.7.0"
+  checksum: b9b7f0c42d99da764be75dd00b2f2be162f5a0ca43aafe0c740efa76b5f37f8a4f4e2ccc84883054e06e05c1169733aa8ee7750da0334c9cba26d9e10ae844f1
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.9":
   version: 7.0.11
   resolution: "@types/json-schema@npm:7.0.11"
@@ -954,12 +961,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "chatgpt-by-api@workspace:."
   dependencies:
+    "@types/dedent": 0.7.0
     "@types/react": 18.0.28
     "@types/react-dom": 18.0.11
     "@typescript-eslint/eslint-plugin": 5.55.0
     "@typescript-eslint/parser": 5.55.0
     "@vitejs/plugin-react-swc": 3.2.0
     autoprefixer: 10.4.14
+    dedent: 0.7.0
     eslint: 8.36.0
     eslint-config-prettier: 8.7.0
     eslint-import-resolver-typescript: 3.5.3
@@ -1092,6 +1101,13 @@ __metadata:
   dependencies:
     ms: ^2.1.1
   checksum: b3d8c5940799914d30314b7c3304a43305fd0715581a919dacb8b3176d024a782062368405b47491516d2091d6462d4d11f2f4974a405048094f8bfebfa3071c
+  languageName: node
+  linkType: hard
+
+"dedent@npm:0.7.0":
+  version: 0.7.0
+  resolution: "dedent@npm:0.7.0"
+  checksum: 87de191050d9a40dd70cad01159a0bcf05ecb59750951242070b6abf9569088684880d00ba92a955b4058804f16eeaf91d604f283929b4f614d181cd7ae633d2
   languageName: node
   linkType: hard
 

@@ -1,8 +1,18 @@
+import dedent from 'dedent';
 import { useEffect, useRef, useState } from 'react';
 
 type Message = {
-  role: 'assistant' | 'user';
+  role: 'system' | 'assistant' | 'user';
   content: string;
+};
+
+const DEFAULT_SYSTEM_MESSAGE: Message = {
+  role: 'system',
+  content: dedent(`
+    You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.
+    Knowledge cutoff: 2021-09-01
+    Current date: ${new Date().toISOString().split('T')[0]}
+  `),
 };
 
 const parseJson = (str: string) => {
@@ -24,7 +34,7 @@ function App() {
   const [model, setModel] = useState('gpt-3.5-turbo');
   const [possibleModels, setPossibleModels] = useState<string[]>([]);
   const [inputText, setInputText] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([DEFAULT_SYSTEM_MESSAGE]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -147,13 +157,13 @@ function App() {
                 <div key={index} className="bg-neutral-100 px-6 py-4">
                   <p className="break-word whitespace-pre-wrap">{message.content.trim()}</p>
                 </div>
-              ) : (
+              ) : message.role === 'assistant' ? (
                 <div key={index} className="bg-neutral-200 px-6 py-4 flex">
                   <p className="ml-2 break-word whitespace-pre-wrap">
                     {'👉 ' + message.content.trim()}
                   </p>
                 </div>
-              ),
+              ) : null,
             )}
           </div>
 
