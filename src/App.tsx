@@ -6,14 +6,14 @@ type Message = {
   content: string;
 };
 
-const DEFAULT_SYSTEM_MESSAGE: Message = {
+const getSystemMessage = (): Message => ({
   role: 'system',
   content: dedent(`
     You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.
     Knowledge cutoff: 2021-09-01
     Current date: ${new Date().toISOString().split('T')[0]}
   `),
-};
+});
 
 const parseJson = (str: string) => {
   try {
@@ -34,7 +34,7 @@ function App() {
   const [model, setModel] = useState('gpt-3.5-turbo');
   const [possibleModels, setPossibleModels] = useState<string[]>([]);
   const [inputText, setInputText] = useState('');
-  const [messages, setMessages] = useState<Message[]>([DEFAULT_SYSTEM_MESSAGE]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -42,6 +42,13 @@ function App() {
       setShowApiKeyModal(true);
     }
   }, [apiKey]);
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      const systemMessage = getSystemMessage();
+      setMessages([systemMessage]);
+    }
+  }, []);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -67,7 +74,11 @@ function App() {
       return;
     }
 
-    const inputMessages = [...messages, { role: 'user' as const, content: inputText }];
+    const inputMessages = [
+      getSystemMessage(),
+      ...messages.slice(1),
+      { role: 'user' as const, content: inputText },
+    ];
 
     setMessages(inputMessages);
     setInputText('');
@@ -86,10 +97,20 @@ function App() {
       }),
     });
 
-    if (response.status === 429) {
-      alert('API 요청 제한을 초과했습니다.\nOpenAI 계정에 결제 정보가 등록되었는지 확인해주세요.');
+    if (response.status !== 200) {
+      const { error } = await response.json();
+
+      if (error.code === 'context_length_exceeded') {
+        alert('대화가 너무 길어져서 ChatGPT가 고장났어요.');
+      } else if (response.status === 429) {
+        alert('API 요청 제한을 초과했어요.\nOpenAI 계정에 결제 정보가 등록되었는지 확인해주세요.');
+      } else {
+        alert(error.message);
+      }
+
       setMessages(inputMessages.slice(0, inputMessages.length - 1));
       setIsLoading(false);
+
       return;
     }
 
