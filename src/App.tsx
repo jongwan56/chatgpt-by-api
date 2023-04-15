@@ -38,8 +38,8 @@ function App() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
-  const [model, setModel] = useState('gpt-3.5-turbo');
-  const [modelTemp, setModelTemp] = useState(model);
+  const [model, setModel] = useState('');
+  const [modelTemp, setModelTemp] = useState('');
   const [possibleModels, setPossibleModels] = useState<string[]>([]);
   const [showModelModal, setShowModelModal] = useState(false);
 
@@ -52,6 +52,13 @@ function App() {
       setShowApiKeyModal(true);
     }
   }, [apiKey]);
+
+  useEffect(() => {
+    const defaultModel =
+      possibleModels.find((model) => model === 'gpt-3.5-turbo') ?? possibleModels.at(-1) ?? '';
+    setModel(defaultModel);
+    setModelTemp(defaultModel);
+  }, [possibleModels]);
 
   useEffect(() => {
     if (messages.length === 0) {
