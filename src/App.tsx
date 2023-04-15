@@ -1,7 +1,9 @@
 import dedent from 'dedent';
 import { useEffect, useRef, useState } from 'react';
+import EllipsisHorizontalIcon from './assets/icons/ellipsis-horizontal';
 import EyeIcon from './assets/icons/eye';
 import EyeSlashIcon from './assets/icons/eye-slash';
+import PaperAirplaneIcon from './assets/icons/paper-airplane';
 import Select, { Option } from './components/select';
 
 type Message = {
@@ -158,6 +160,7 @@ function App() {
   return (
     <>
       <div className="h-screen flex">
+        {/* 사이드바 */}
         <div className="w-64 h-full bg-neutral-800 p-4 flex flex-col justify-end items-center">
           <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
 
@@ -193,7 +196,9 @@ function App() {
           )}
         </div>
 
+        {/* 채팅창 + 입력창 */}
         <div className="flex-1 h-full flex flex-col">
+          {/* 채팅창 */}
           <div className="flex-1 overflow-scroll" ref={chatWindowRef}>
             {messages.map((message, index) =>
               message.role === 'user' ? (
@@ -210,6 +215,7 @@ function App() {
             )}
           </div>
 
+          {/* 입력창 */}
           <div className="w-full bg-neutral-500 p-4 flex items-center">
             <textarea
               className="flex-1 resize-none p-4 rounded-l"
@@ -225,8 +231,15 @@ function App() {
                 }
               }}
             />
-            <button className="w-20 h-full rounded-r bg-white" onClick={sendMessage}>
-              {isLoading ? '...' : 'Send'}
+            <button
+              className="w-16 h-full rounded-r bg-white flex items-center justify-center"
+              onClick={sendMessage}
+            >
+              {isLoading ? (
+                <EllipsisHorizontalIcon className="w-6 h-6 text-neutral-800" />
+              ) : (
+                <PaperAirplaneIcon className="w-6 h-6 text-neutral-800" />
+              )}
             </button>
           </div>
         </div>
