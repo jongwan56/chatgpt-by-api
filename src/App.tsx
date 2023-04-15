@@ -1,5 +1,7 @@
 import dedent from 'dedent';
 import { useEffect, useRef, useState } from 'react';
+import EyeIcon from './assets/icons/eye';
+import EyeSlashIcon from './assets/icons/eye-slash';
 
 type Message = {
   role: 'system' | 'assistant' | 'user';
@@ -232,12 +234,16 @@ function App() {
                 }}
               />
               <button
-                className="w-12 h-full bg-white rounded-r border-[1px] border-l-0 border-neutral-300"
+                className="w-10 h-full bg-white rounded-r border-[1px] border-l-0 border-neutral-300 flex justify-center items-center"
                 onClick={() => {
                   setShowApiKey((prev) => !prev);
                 }}
               >
-                <p className="text-xs font-light">{showApiKey ? '가리기' : '보기'}</p>
+                {showApiKey ? (
+                  <EyeIcon className="w-4 h-4 text-neutral-400" />
+                ) : (
+                  <EyeSlashIcon className="w-4 h-4 text-neutral-400" />
+                )}
               </button>
             </div>
             <button
