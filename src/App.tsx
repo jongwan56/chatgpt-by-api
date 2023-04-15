@@ -2,6 +2,7 @@ import dedent from 'dedent';
 import { useEffect, useRef, useState } from 'react';
 import EyeIcon from './assets/icons/eye';
 import EyeSlashIcon from './assets/icons/eye-slash';
+import Select, { Option } from './components/select';
 
 type Message = {
   role: 'system' | 'assistant' | 'user';
@@ -27,14 +28,19 @@ const parseJson = (str: string) => {
 
 function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const chatWindowRef = useRef<HTMLDivElement>(null);
 
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [apiKeyTemp, setApiKeyTemp] = useState('');
   const [apiKeyLoading, setApiKeyLoading] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+
   const [model, setModel] = useState('gpt-3.5-turbo');
+  const [modelTemp, setModelTemp] = useState(model);
   const [possibleModels, setPossibleModels] = useState<string[]>([]);
+  const [showModelModal, setShowModelModal] = useState(false);
+
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -153,29 +159,42 @@ function App() {
     <>
       <div className="h-screen flex">
         <div className="w-64 h-full bg-neutral-800 p-4 flex flex-col justify-end items-center">
-          {apiKey && (
-            <>
-              <p className="text-white font-mono mb-4">
-                <span>API Key: </span>
-                <span className="font-mono text-neutral-400">
-                  {apiKey.substring(0, 3) + '...' + apiKey.substring(apiKey.length - 4)}
-                </span>
-              </p>
-            </>
-          )}
+          <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
+
           <button
-            className="w-full h-12 bg-white rounded"
+            className="w-full flex flex-col items-center font-mono mb-4"
             onClick={() => {
-              setShowApiKey(false);
-              setShowApiKeyModal(true);
+              setShowModelModal(true);
             }}
           >
-            <p className="text-black">OpenAI API Key 변경</p>
+            <p className="text-white">Model</p>
+            <p className="text-neutral-400">{model}</p>
           </button>
+
+          <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
+
+          {apiKey && (
+            <>
+              <button
+                className="w-full flex flex-col items-center font-mono mb-4"
+                onClick={() => {
+                  setShowApiKey(false);
+                  setShowApiKeyModal(true);
+                }}
+              >
+                <p className="text-white">API Key</p>
+                <p className="text-neutral-400">
+                  {apiKey.substring(0, 3) + '...' + apiKey.substring(apiKey.length - 4)}
+                </p>
+              </button>
+
+              <div className="w-full h-0 border-b-[1px] border-neutral-600" />
+            </>
+          )}
         </div>
 
         <div className="flex-1 h-full flex flex-col">
-          <div className="flex-1 overflow-scroll">
+          <div className="flex-1 overflow-scroll" ref={chatWindowRef}>
             {messages.map((message, index) =>
               message.role === 'user' ? (
                 <div key={index} className="bg-neutral-100 px-6 py-4">
@@ -213,6 +232,43 @@ function App() {
         </div>
       </div>
 
+      {/* 모델 선택 모달 */}
+      {showModelModal && (
+        <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 flex items-center justify-center">
+          <div className="w-4/5 max-w-sm bg-white px-8 py-6 rounded-lg flex flex-col items-center relative">
+            <p>사용할 모델을 선택해주세요.</p>
+            <Select
+              className="w-full h-12 mt-6"
+              options={possibleModels.map((model) => ({ label: model, value: model }))}
+              defaultOption={{ label: model, value: model }}
+              placeholder="Select model"
+              onChange={(option: Option) => {
+                setModelTemp(option.value);
+              }}
+            />
+            <button
+              className="w-16 h-8 rounded bg-green-600 disabled:opacity-70 mt-6"
+              disabled={!modelTemp}
+              onClick={async () => {
+                setModel(modelTemp);
+                setShowModelModal(false);
+              }}
+            >
+              <p className="text-xs text-white">확인</p>
+            </button>
+            <button
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center"
+              onClick={() => {
+                setShowModelModal(false);
+              }}
+            >
+              <img className="w-4 h-4" src="https://www.svgrepo.com/show/507886/x-alt.svg" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* API Key 입력 모달 */}
       {showApiKeyModal && (
         <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 flex items-center justify-center">
           <div className="w-4/5 max-w-sm bg-white px-8 py-6 rounded-lg flex flex-col items-center relative">
@@ -248,7 +304,7 @@ function App() {
             </div>
             <button
               className="w-16 h-8 rounded bg-green-600 disabled:opacity-70 mt-6"
-              disabled={apiKeyLoading}
+              disabled={apiKeyLoading || !apiKeyTemp}
               onClick={async () => {
                 if (!apiKeyTemp) {
                   return;
