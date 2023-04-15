@@ -169,19 +169,25 @@ function App() {
       <div className="h-screen flex">
         {/* 사이드바 */}
         <div className="w-64 h-full bg-neutral-800 p-4 flex flex-col justify-end items-center">
-          <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
+          {(model || apiKey) && (
+            <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
+          )}
 
-          <button
-            className="w-full flex flex-col items-center font-mono mb-4"
-            onClick={() => {
-              setShowModelModal(true);
-            }}
-          >
-            <p className="text-white">Model</p>
-            <p className="text-neutral-400">{model}</p>
-          </button>
+          {model && (
+            <>
+              <button
+                className="w-full flex flex-col items-center font-mono mb-4"
+                onClick={() => {
+                  setShowModelModal(true);
+                }}
+              >
+                <p className="text-white">Model</p>
+                <p className="text-neutral-400">{model}</p>
+              </button>
 
-          <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
+              <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
+            </>
+          )}
 
           {apiKey && (
             <>
