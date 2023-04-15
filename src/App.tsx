@@ -64,10 +64,11 @@ function App() {
     }
   }, [inputText]);
 
-  const closeInputModal = () => {
-    setShowApiKeyModal(false);
-    setShowApiKey(false);
-  };
+  useEffect(() => {
+    if (chatWindowRef.current) {
+      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const sendMessage = async () => {
     if (isLoading) {
