@@ -1,15 +1,22 @@
 import localforage from 'localforage';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import ChatBubbleLeftRightIcon from './assets/icons/chat-bubble-left-right';
 import EllipsisHorizontalIcon from './assets/icons/ellipsis-horizontal';
 import EyeIcon from './assets/icons/eye';
 import EyeSlashIcon from './assets/icons/eye-slash';
 import PaperAirplaneIcon from './assets/icons/paper-airplane';
+import PlusIcon from './assets/icons/plus';
 import { getSystemMessage, parseJson } from './common/utils';
 import Select, { Option } from './components/select';
 
 export type Message = {
   role: 'system' | 'assistant' | 'user';
   content: string;
+};
+
+export type ChatRoom = {
+  id: number;
+  name: string;
 };
 
 function App() {
@@ -30,6 +37,9 @@ function App() {
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([getSystemMessage()]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [currentChatRoomId, setCurrentChatRoomId] = useState(0);
 
   const verifyAndSetApiKey = useCallback(async (apiKey: string) => {
     const response = await fetch('https://api.openai.com/v1/models', {
@@ -62,6 +72,16 @@ function App() {
     } else {
       setShowApiKeyModal(true);
     }
+  }, []);
+
+  const createChatRoom = useCallback(async () => {
+    const id = chatRooms.length + 1;
+    setChatRooms([...chatRooms, { id, name: `Chat ${id}` }]);
+    setCurrentChatRoomId(id);
+  }, [chatRooms]);
+
+  const changeCurrentChatRoom = useCallback((id: number) => {
+    setCurrentChatRoomId(id);
   }, []);
 
   // API Key 불러오기
@@ -175,15 +195,48 @@ function App() {
     <>
       <div className="h-screen flex">
         {/* 사이드바 */}
-        <div className="w-64 h-full bg-neutral-800 p-4 flex flex-col justify-end items-center">
-          {(model || apiKey) && (
-            <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
-          )}
+        <div className="w-64 h-full bg-neutral-800 p-3 flex flex-col items-center">
+          <button
+            className="w-full flex justify-center items-center p-3 rounded border-[1px] border-neutral-600 hover:bg-neutral-600 mb-3"
+            onClick={createChatRoom}
+          >
+            <PlusIcon className="w-5 h-5 text-white" />
+            <p className="ml-2 text-white">New Chat</p>
+          </button>
 
-          {model && (
-            <>
+          <div className="flex-1 w-full overflow-scroll flex flex-col space-y-2">
+            {chatRooms
+              .slice()
+              .reverse()
+              .map((chatRoom) => {
+                const isCurrent = currentChatRoomId === chatRoom.id;
+
+                return (
+                  <button
+                    key={chatRoom.id}
+                    className={`w-full flex p-3 rounded ${
+                      isCurrent ? 'bg-neutral-600' : 'hover:bg-neutral-700'
+                    }`}
+                    disabled={isCurrent}
+                    onClick={() => {
+                      changeCurrentChatRoom(chatRoom.id);
+                    }}
+                  >
+                    <div className="flex-1 flex items-center space-x-3">
+                      <ChatBubbleLeftRightIcon className="w-5 h-5 text-neutral-300" />
+                      <span className="text-white">{chatRoom.name}</span>
+                    </div>
+                  </button>
+                );
+              })}
+          </div>
+
+          <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-3" />
+
+          <div className="w-full flex flex-col space-y-2">
+            {model && (
               <button
-                className="w-full flex flex-col items-center font-mono mb-4"
+                className="w-full flex flex-col items-center font-mono hover:bg-neutral-700 rounded p-2"
                 onClick={() => {
                   setShowModelModal(true);
                 }}
@@ -191,15 +244,11 @@ function App() {
                 <p className="text-white">Model</p>
                 <p className="text-neutral-400">{model}</p>
               </button>
+            )}
 
-              <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-4" />
-            </>
-          )}
-
-          {apiKey && (
-            <>
+            {apiKey && (
               <button
-                className="w-full flex flex-col items-center font-mono mb-4"
+                className="w-full flex flex-col items-center font-mono hover:bg-neutral-700 rounded p-2"
                 onClick={() => {
                   setShowApiKey(false);
                   setShowApiKeyModal(true);
@@ -210,10 +259,8 @@ function App() {
                   {apiKey.substring(0, 3) + '...' + apiKey.substring(apiKey.length - 4)}
                 </p>
               </button>
-
-              <div className="w-full h-0 border-b-[1px] border-neutral-600" />
-            </>
-          )}
+            )}
+          </div>
         </div>
 
         {/* 채팅창 + 입력창 */}
