@@ -1,31 +1,15 @@
-import dedent from 'dedent';
-import { useEffect, useRef, useState } from 'react';
+import localforage from 'localforage';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import EllipsisHorizontalIcon from './assets/icons/ellipsis-horizontal';
 import EyeIcon from './assets/icons/eye';
 import EyeSlashIcon from './assets/icons/eye-slash';
 import PaperAirplaneIcon from './assets/icons/paper-airplane';
+import { getSystemMessage, parseJson } from './common/utils';
 import Select, { Option } from './components/select';
 
-type Message = {
+export type Message = {
   role: 'system' | 'assistant' | 'user';
   content: string;
-};
-
-const getSystemMessage = (): Message => ({
-  role: 'system',
-  content: dedent(`
-    You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.
-    Knowledge cutoff: 2021-09-01
-    Current date: ${new Date().toISOString().split('T')[0]}
-  `),
-});
-
-const parseJson = (str: string) => {
-  try {
-    return JSON.parse(str);
-  } catch {
-    return undefined;
-  }
 };
 
 function App() {
@@ -44,29 +28,50 @@ function App() {
   const [showModelModal, setShowModelModal] = useState(false);
 
   const [inputText, setInputText] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([getSystemMessage()]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!apiKey) {
-      setShowApiKeyModal(true);
-    }
-  }, [apiKey]);
+  const verifyAndSetApiKey = useCallback(async (apiKey: string) => {
+    const response = await fetch('https://api.openai.com/v1/models', {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
 
-  useEffect(() => {
-    const defaultModel =
-      possibleModels.find((model) => model === 'gpt-3.5-turbo') ?? possibleModels.at(-1) ?? '';
+    const data = (await response.json()).data as { id: string }[];
+
+    const models = data.filter((model) => model.id.includes('gpt-')).map((model) => model.id);
+    const defaultModel = models.at(-1) ?? '';
+
+    setPossibleModels(models);
     setModel(defaultModel);
     setModelTemp(defaultModel);
-  }, [possibleModels]);
+    setApiKey(apiKey);
+    setApiKeyTemp('');
 
-  useEffect(() => {
-    if (messages.length === 0) {
-      const systemMessage = getSystemMessage();
-      setMessages([systemMessage]);
+    await localforage.setItem('api-key', apiKey);
+  }, []);
+
+  const getApiKeyOrShowModal = useCallback(async () => {
+    const savedApiKey = await localforage.getItem<string>('api-key');
+    if (savedApiKey) {
+      try {
+        await verifyAndSetApiKey(savedApiKey);
+      } catch {
+        await localforage.removeItem('api-key');
+        setShowApiKeyModal(true);
+      }
+    } else {
+      setShowApiKeyModal(true);
     }
   }, []);
 
+  // API Key 불러오기
+  useEffect(() => {
+    if (!apiKey) {
+      getApiKeyOrShowModal();
+    }
+  }, [apiKey]);
+
+  // 입력창 높이 조절
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = '1rem';
@@ -75,19 +80,21 @@ function App() {
       if (textareaRef.current.scrollHeight > 256) {
         textareaRef.current.style.height = '256px';
         textareaRef.current.style.overflowY = 'auto';
+        textareaRef.current.scrollTop = 256;
       } else {
         textareaRef.current.style.overflowY = 'hidden';
       }
     }
   }, [inputText]);
 
+  // 새 메시지 추가 시 채팅창 아래로 스크롤
   useEffect(() => {
     if (chatWindowRef.current) {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (isLoading) {
       return;
     }
@@ -162,7 +169,7 @@ function App() {
     }
 
     setIsLoading(false);
-  };
+  }, [isLoading, messages, inputText, apiKey, model]);
 
   return (
     <>
@@ -231,10 +238,11 @@ function App() {
           {/* 입력창 */}
           <div className="w-full bg-neutral-500 p-4 flex items-center">
             <textarea
-              className="flex-1 resize-none p-4 rounded-l"
+              className="flex-1 resize-none p-4 rounded-l disabled:bg-white"
               ref={textareaRef}
               value={inputText}
               placeholder="ChatGPT에게 질문해보세요."
+              disabled={!model}
               onChange={(e) => {
                 setInputText(e.target.value);
               }}
@@ -332,26 +340,10 @@ function App() {
               className="w-16 h-8 rounded bg-green-600 disabled:opacity-70 mt-6"
               disabled={apiKeyLoading || !apiKeyTemp}
               onClick={async () => {
-                if (!apiKeyTemp) {
-                  return;
-                }
-
                 setApiKeyLoading(true);
 
                 try {
-                  const response = await fetch('https://api.openai.com/v1/models', {
-                    headers: { Authorization: `Bearer ${apiKeyTemp}` },
-                  });
-
-                  const data = (await response.json()).data as { id: string }[];
-
-                  const models = data
-                    .filter((model) => model.id.includes('gpt-'))
-                    .map((model) => model.id);
-
-                  setApiKey(apiKeyTemp);
-                  setApiKeyTemp('');
-                  setPossibleModels(models);
+                  await verifyAndSetApiKey(apiKeyTemp);
                   setShowApiKey(false);
                   setShowApiKeyModal(false);
                 } catch {

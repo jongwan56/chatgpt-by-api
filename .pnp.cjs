@@ -41,6 +41,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-import-resolver-typescript", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.5.3"],\
             ["eslint-plugin-import", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:2.27.5"],\
             ["eslint-plugin-prettier", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:4.2.1"],\
+            ["localforage", "npm:1.10.0"],\
             ["postcss", "npm:8.4.21"],\
             ["prettier", "npm:2.8.4"],\
             ["react", "npm:18.2.0"],\
@@ -1276,6 +1277,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint-import-resolver-typescript", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.5.3"],\
             ["eslint-plugin-import", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:2.27.5"],\
             ["eslint-plugin-prettier", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:4.2.1"],\
+            ["localforage", "npm:1.10.0"],\
             ["postcss", "npm:8.4.21"],\
             ["prettier", "npm:2.8.4"],\
             ["react", "npm:18.2.0"],\
@@ -2574,6 +2576,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["immediate", [\
+        ["npm:3.0.6", {\
+          "packageLocation": "./.yarn/cache/immediate-npm-3.0.6-c27588a2d3-f9b3486477.zip/node_modules/immediate/",\
+          "packageDependencies": [\
+            ["immediate", "npm:3.0.6"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["import-fresh", [\
         ["npm:3.3.0", {\
           "packageLocation": "./.yarn/cache/import-fresh-npm-3.3.0-3e34265ca9-2cacfad06e.zip/node_modules/import-fresh/",\
@@ -2959,11 +2970,31 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["lie", [\
+        ["npm:3.1.1", {\
+          "packageLocation": "./.yarn/cache/lie-npm-3.1.1-91350720d9-6da9f2121d.zip/node_modules/lie/",\
+          "packageDependencies": [\
+            ["lie", "npm:3.1.1"],\
+            ["immediate", "npm:3.0.6"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["lilconfig", [\
         ["npm:2.1.0", {\
           "packageLocation": "./.yarn/cache/lilconfig-npm-2.1.0-a179261924-8549bb352b.zip/node_modules/lilconfig/",\
           "packageDependencies": [\
             ["lilconfig", "npm:2.1.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["localforage", [\
+        ["npm:1.10.0", {\
+          "packageLocation": "./.yarn/cache/localforage-npm-1.10.0-cf9ea9a436-f2978b434d.zip/node_modules/localforage/",\
+          "packageDependencies": [\
+            ["localforage", "npm:1.10.0"],\
+            ["lie", "npm:3.1.1"]\
           ],\
           "linkType": "HARD"\
         }]\
