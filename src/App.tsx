@@ -243,6 +243,7 @@ function App() {
           <button
             className="w-full flex justify-center items-center p-3 rounded border-[1px] border-neutral-600 hover:bg-neutral-600 mb-3"
             onClick={createChatRoom}
+            disabled={!(model && apiKey)}
           >
             <PlusIcon className="w-5 h-5 text-white" />
             <p className="ml-2 text-white">New Chat</p>
@@ -275,10 +276,12 @@ function App() {
               })}
           </div>
 
-          <div className="w-full h-0 border-b-[1px] border-neutral-600 mb-3" />
-
-          <div className="w-full flex flex-col space-y-2">
-            {model && (
+          <div
+            className={`w-full overflow-hidden transition-all duration-500 ${
+              model && apiKey ? '' : 'max-h-0 translate-y-full'
+            }`}
+          >
+            <div className="w-full flex flex-col space-y-2 pt-3 border-t-[1px] border-neutral-600">
               <button
                 className="w-full flex flex-col items-center font-mono hover:bg-neutral-700 rounded p-2"
                 onClick={() => {
@@ -288,9 +291,7 @@ function App() {
                 <p className="text-white">Model</p>
                 <p className="text-neutral-400">{model}</p>
               </button>
-            )}
 
-            {apiKey && (
               <button
                 className="w-full flex flex-col items-center font-mono hover:bg-neutral-700 rounded p-2"
                 onClick={() => {
@@ -303,7 +304,7 @@ function App() {
                   {apiKey.substring(0, 3) + '...' + apiKey.substring(apiKey.length - 4)}
                 </p>
               </button>
-            )}
+            </div>
           </div>
         </div>
 
@@ -342,7 +343,7 @@ function App() {
               ref={textareaRef}
               value={inputText}
               placeholder="ChatGPT에게 질문해보세요."
-              disabled={!model}
+              disabled={!(model && apiKey)}
               onChange={(e) => {
                 setInputText(e.target.value);
               }}
@@ -355,6 +356,7 @@ function App() {
             <button
               className="w-16 h-full rounded-r bg-white flex items-center justify-center"
               onClick={sendMessage}
+              disabled={!(model && apiKey)}
             >
               {isLoading ? (
                 <EllipsisHorizontalIcon className="w-6 h-6 text-neutral-800" />
