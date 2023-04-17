@@ -1,11 +1,14 @@
 import localforage from 'localforage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ChatBubbleLeftRightIcon from './assets/icons/chat-bubble-left-right';
+import CheckIcon from './assets/icons/check';
 import EllipsisHorizontalIcon from './assets/icons/ellipsis-horizontal';
 import EyeIcon from './assets/icons/eye';
 import EyeSlashIcon from './assets/icons/eye-slash';
 import PaperAirplaneIcon from './assets/icons/paper-airplane';
+import PencilIcon from './assets/icons/pencil';
 import PlusIcon from './assets/icons/plus';
+import TrashIcon from './assets/icons/trash';
 import { getSystemMessage, parseJson } from './common/utils';
 import Select, { Option } from './components/select';
 
@@ -40,6 +43,8 @@ function App() {
 
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [currentChatRoomId, setCurrentChatRoomId] = useState(0);
+  const [editNameMode, setEditNameMode] = useState(false);
+  const [editName, setEditName] = useState('');
 
   const [isScrolledUp, setIsScrolledUp] = useState(false);
 
@@ -77,10 +82,35 @@ function App() {
   }, []);
 
   const createChatRoom = useCallback(async () => {
-    const id = chatRooms.length + 1;
+    const id = (chatRooms.at(-1)?.id ?? 0) + 1;
     await saveChatRooms([...chatRooms, { id, name: `Chat ${id}` }]);
     await changeCurrentChatRoom(id);
   }, [chatRooms]);
+
+  const deleteChatRoom = useCallback(
+    async (id: number) => {
+      const index = chatRooms.findIndex((chatRoom) => chatRoom.id === id);
+      const newChatRooms = chatRooms.filter((chatRoom) => chatRoom.id !== id);
+
+      await saveChatRooms(newChatRooms);
+      await deleteMessages(id);
+
+      if (newChatRooms.length) {
+        await changeCurrentChatRoom(newChatRooms[(index || 1) - 1].id);
+      }
+    },
+    [chatRooms],
+  );
+
+  const editChatRoomName = useCallback(
+    async (id: number, name: string) => {
+      await saveChatRooms(
+        chatRooms.map((chatRoom) => (chatRoom.id === id ? { ...chatRoom, name } : chatRoom)),
+      );
+      setEditNameMode(false);
+    },
+    [chatRooms],
+  );
 
   const loadChatRooms = useCallback(async () => {
     const rawChatRooms = await localforage.getItem<string>('chat-rooms');
@@ -99,19 +129,21 @@ function App() {
     const messages: Message[] = rawMessages ? JSON.parse(rawMessages) : [];
 
     if (messages.length === 0) {
-      await saveMessages([getSystemMessage()]);
+      await saveMessages(chatRoomId, [getSystemMessage()]);
     } else {
       setMessages(messages);
     }
   }, []);
 
-  const saveMessages = useCallback(
-    async (messages: Message[]) => {
-      await localforage.setItem(`messages-${currentChatRoomId}`, JSON.stringify(messages));
-      setMessages(messages);
-    },
-    [currentChatRoomId],
-  );
+  const saveMessages = useCallback(async (id: number, messages: Message[]) => {
+    await localforage.setItem(`messages-${id}`, JSON.stringify(messages));
+    setMessages(messages);
+  }, []);
+
+  const deleteMessages = useCallback(async (id: number) => {
+    await localforage.removeItem(`messages-${id}`);
+    setMessages([getSystemMessage()]);
+  }, []);
 
   const saveChatRooms = useCallback(async (chatRooms: ChatRoom[]) => {
     await localforage.setItem('chat-rooms', JSON.stringify(chatRooms));
@@ -121,6 +153,7 @@ function App() {
   const changeCurrentChatRoom = useCallback(async (id: number) => {
     await loadMessages(id);
     setCurrentChatRoomId(id);
+    setEditNameMode(false);
   }, []);
 
   // API Key 불러오기
@@ -168,7 +201,7 @@ function App() {
     const originalMessages = [getSystemMessage(), ...messages.slice(1)];
     const inputMessages = [...originalMessages, { role: 'user' as const, content: inputText }];
 
-    await saveMessages(inputMessages);
+    await saveMessages(currentChatRoomId, inputMessages);
     setInputText('');
     setIsLoading(true);
 
@@ -196,7 +229,7 @@ function App() {
         alert(error.message);
       }
 
-      await saveMessages(originalMessages);
+      await saveMessages(currentChatRoomId, originalMessages);
 
       setIsLoading(false);
 
@@ -214,7 +247,7 @@ function App() {
       content: '',
     };
 
-    await saveMessages([...inputMessages, responseMessage]);
+    await saveMessages(currentChatRoomId, [...inputMessages, responseMessage]);
 
     while (true) {
       const { value, done } = await reader.read();
@@ -227,13 +260,13 @@ function App() {
         const delta = parseJson(data)?.choices?.[0]?.delta?.content;
         if (delta) {
           responseMessage.content += delta;
-          await saveMessages([...inputMessages, responseMessage]);
+          await saveMessages(currentChatRoomId, [...inputMessages, responseMessage]);
         }
       }
     }
 
     setIsLoading(false);
-  }, [isLoading, messages, inputText, apiKey, model]);
+  }, [isLoading, messages, inputText, apiKey, model, currentChatRoomId]);
 
   return (
     <>
@@ -259,7 +292,7 @@ function App() {
                 return (
                   <button
                     key={chatRoom.id}
-                    className={`w-full flex p-3 rounded ${
+                    className={`w-full flex items-center p-3 rounded ${
                       isCurrent ? 'bg-neutral-600' : 'hover:bg-neutral-700'
                     }`}
                     disabled={isCurrent}
@@ -267,10 +300,56 @@ function App() {
                       changeCurrentChatRoom(chatRoom.id);
                     }}
                   >
-                    <div className="flex-1 flex items-center space-x-3">
-                      <ChatBubbleLeftRightIcon className="w-5 h-5 text-neutral-300" />
-                      <span className="text-white">{chatRoom.name}</span>
-                    </div>
+                    <ChatBubbleLeftRightIcon className="w-5 h-5 text-neutral-300" />
+                    {isCurrent && editNameMode ? (
+                      <input
+                        className="flex-1 ml-2 px-1 text-left text-white truncate bg-neutral-500 rounded"
+                        autoFocus={true}
+                        value={editName}
+                        onChange={(e) => {
+                          setEditName(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            editChatRoomName(chatRoom.id, editName);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <p className="flex-1 ml-3 text-left text-white truncate">{chatRoom.name}</p>
+                    )}
+                    {isCurrent && (
+                      <>
+                        {editNameMode ? (
+                          <button
+                            className="ml-1 p-1 hover:bg-neutral-700 rounded"
+                            onClick={() => {
+                              editChatRoomName(chatRoom.id, editName);
+                            }}
+                          >
+                            <CheckIcon className="w-4 h-4 text-neutral-300" />
+                          </button>
+                        ) : (
+                          <button
+                            className="ml-1 p-1 hover:bg-neutral-700 rounded"
+                            onClick={() => {
+                              setEditName(chatRoom.name);
+                              setEditNameMode(true);
+                            }}
+                          >
+                            <PencilIcon className="w-4 h-4 text-neutral-300" />
+                          </button>
+                        )}
+                        <button
+                          className="p-1 hover:bg-neutral-700 rounded"
+                          onClick={() => {
+                            deleteChatRoom(chatRoom.id);
+                          }}
+                        >
+                          <TrashIcon className="w-4 h-4 text-neutral-300" />
+                        </button>
+                      </>
+                    )}
                   </button>
                 );
               })}
