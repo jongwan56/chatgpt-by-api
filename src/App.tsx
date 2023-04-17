@@ -41,7 +41,21 @@ function App() {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [currentChatRoomId, setCurrentChatRoomId] = useState(0);
 
-  const verifyAndSetApiKey = useCallback(async (apiKey: string) => {
+  const getApiKeyOrShowModal = useCallback(async () => {
+    const savedApiKey = await localforage.getItem<string>('api-key');
+    if (savedApiKey) {
+      try {
+        await verifyAndSaveApiKey(savedApiKey);
+      } catch {
+        await localforage.removeItem('api-key');
+        setShowApiKeyModal(true);
+      }
+    } else {
+      setShowApiKeyModal(true);
+    }
+  }, []);
+
+  const verifyAndSaveApiKey = useCallback(async (apiKey: string) => {
     const response = await fetch('https://api.openai.com/v1/models', {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
@@ -60,27 +74,50 @@ function App() {
     await localforage.setItem('api-key', apiKey);
   }, []);
 
-  const getApiKeyOrShowModal = useCallback(async () => {
-    const savedApiKey = await localforage.getItem<string>('api-key');
-    if (savedApiKey) {
-      try {
-        await verifyAndSetApiKey(savedApiKey);
-      } catch {
-        await localforage.removeItem('api-key');
-        setShowApiKeyModal(true);
-      }
+  const createChatRoom = useCallback(async () => {
+    const id = chatRooms.length + 1;
+    await saveChatRooms([...chatRooms, { id, name: `Chat ${id}` }]);
+    await changeCurrentChatRoom(id);
+  }, [chatRooms]);
+
+  const loadChatRooms = useCallback(async () => {
+    const rawChatRooms = await localforage.getItem<string>('chat-rooms');
+    const chatRooms: ChatRoom[] = rawChatRooms ? JSON.parse(rawChatRooms) : [];
+
+    if (chatRooms.length === 0) {
+      await createChatRoom();
     } else {
-      setShowApiKeyModal(true);
+      setChatRooms(chatRooms);
+      await changeCurrentChatRoom(chatRooms[chatRooms.length - 1].id);
     }
   }, []);
 
-  const createChatRoom = useCallback(async () => {
-    const id = chatRooms.length + 1;
-    setChatRooms([...chatRooms, { id, name: `Chat ${id}` }]);
-    setCurrentChatRoomId(id);
-  }, [chatRooms]);
+  const loadMessages = useCallback(async (chatRoomId: number) => {
+    const rawMessages = await localforage.getItem<string>(`messages-${chatRoomId}`);
+    const messages: Message[] = rawMessages ? JSON.parse(rawMessages) : [];
 
-  const changeCurrentChatRoom = useCallback((id: number) => {
+    if (messages.length === 0) {
+      await saveMessages([getSystemMessage()]);
+    } else {
+      setMessages(messages);
+    }
+  }, []);
+
+  const saveMessages = useCallback(
+    async (messages: Message[]) => {
+      await localforage.setItem(`messages-${currentChatRoomId}`, JSON.stringify(messages));
+      setMessages(messages);
+    },
+    [currentChatRoomId],
+  );
+
+  const saveChatRooms = useCallback(async (chatRooms: ChatRoom[]) => {
+    await localforage.setItem('chat-rooms', JSON.stringify(chatRooms));
+    setChatRooms(chatRooms);
+  }, []);
+
+  const changeCurrentChatRoom = useCallback(async (id: number) => {
+    await loadMessages(id);
     setCurrentChatRoomId(id);
   }, []);
 
@@ -90,6 +127,11 @@ function App() {
       getApiKeyOrShowModal();
     }
   }, [apiKey]);
+
+  // Chat Room 불러오기
+  useEffect(() => {
+    loadChatRooms();
+  }, []);
 
   // 입력창 높이 조절
   useEffect(() => {
@@ -119,13 +161,10 @@ function App() {
       return;
     }
 
-    const inputMessages = [
-      getSystemMessage(),
-      ...messages.slice(1),
-      { role: 'user' as const, content: inputText },
-    ];
+    const originalMessages = [getSystemMessage(), ...messages.slice(1)];
+    const inputMessages = [...originalMessages, { role: 'user' as const, content: inputText }];
 
-    setMessages(inputMessages);
+    await saveMessages(inputMessages);
     setInputText('');
     setIsLoading(true);
 
@@ -153,7 +192,8 @@ function App() {
         alert(error.message);
       }
 
-      setMessages(inputMessages.slice(0, inputMessages.length - 1));
+      await saveMessages(originalMessages);
+
       setIsLoading(false);
 
       return;
@@ -170,7 +210,7 @@ function App() {
       content: '',
     };
 
-    setMessages([...inputMessages, responseMessage]);
+    await saveMessages([...inputMessages, responseMessage]);
 
     while (true) {
       const { value, done } = await reader.read();
@@ -183,7 +223,7 @@ function App() {
         const delta = parseJson(data)?.choices?.[0]?.delta?.content;
         if (delta) {
           responseMessage.content += delta;
-          setMessages([...inputMessages, responseMessage]);
+          await saveMessages([...inputMessages, responseMessage]);
         }
       }
     }
@@ -390,7 +430,7 @@ function App() {
                 setApiKeyLoading(true);
 
                 try {
-                  await verifyAndSetApiKey(apiKeyTemp);
+                  await verifyAndSaveApiKey(apiKeyTemp);
                   setShowApiKey(false);
                   setShowApiKeyModal(false);
                 } catch {
