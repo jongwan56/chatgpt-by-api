@@ -41,6 +41,8 @@ function App() {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [currentChatRoomId, setCurrentChatRoomId] = useState(0);
 
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+
   const getApiKeyOrShowModal = useCallback(async () => {
     const savedApiKey = await localforage.getItem<string>('api-key');
     if (savedApiKey) {
@@ -152,7 +154,9 @@ function App() {
   // 새 메시지 추가 시 채팅창 아래로 스크롤
   useEffect(() => {
     if (chatWindowRef.current) {
-      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+      if (!isScrolledUp) {
+        chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+      }
     }
   }, [messages]);
 
@@ -306,7 +310,16 @@ function App() {
         {/* 채팅창 + 입력창 */}
         <div className="flex-1 h-full flex flex-col">
           {/* 채팅창 */}
-          <div className="flex-1 overflow-scroll" ref={chatWindowRef}>
+          <div
+            className="flex-1 overflow-scroll"
+            ref={chatWindowRef}
+            onScroll={() => {
+              if (chatWindowRef.current) {
+                const { scrollTop, offsetHeight, scrollHeight } = chatWindowRef.current;
+                setIsScrolledUp(scrollTop + offsetHeight < scrollHeight);
+              }
+            }}
+          >
             {messages.map((message, index) =>
               message.role === 'user' ? (
                 <div key={index} className="bg-neutral-100 px-6 py-4">
