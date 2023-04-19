@@ -48,6 +48,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prettier", "npm:2.8.4"],\
             ["react", "npm:18.2.0"],\
             ["react-dom", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:18.2.0"],\
+            ["tailwind-scrollbar-hide", "npm:1.1.7"],\
             ["tailwindcss", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.2.7"],\
             ["typescript", "patch:typescript@npm%3A5.0.2#~builtin<compat/typescript>::version=5.0.2&hash=85af82"],\
             ["vite", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:4.2.0"]\
@@ -1300,6 +1301,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["prettier", "npm:2.8.4"],\
             ["react", "npm:18.2.0"],\
             ["react-dom", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:18.2.0"],\
+            ["tailwind-scrollbar-hide", "npm:1.1.7"],\
             ["tailwindcss", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:3.2.7"],\
             ["typescript", "patch:typescript@npm%3A5.0.2#~builtin<compat/typescript>::version=5.0.2&hash=85af82"],\
             ["vite", "virtual:76133b50f53b35fe025b1428ebea91d693364633313bc10ac6f20c8b2064b65fe7c3d631d8f7c26ab8516099027461093960c71b01397f97372e679c4630f37f#npm:4.2.0"]\
@@ -4360,6 +4362,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["synckit", "npm:0.8.5"],\
             ["@pkgr/utils", "npm:2.3.1"],\
             ["tslib", "npm:2.5.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["tailwind-scrollbar-hide", [\
+        ["npm:1.1.7", {\
+          "packageLocation": "./.yarn/cache/tailwind-scrollbar-hide-npm-1.1.7-537baa5b75-2434a1db7a.zip/node_modules/tailwind-scrollbar-hide/",\
+          "packageDependencies": [\
+            ["tailwind-scrollbar-hide", "npm:1.1.7"]\
           ],\
           "linkType": "HARD"\
         }]\

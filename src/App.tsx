@@ -272,7 +272,7 @@ function App() {
     <>
       <div className="h-screen flex">
         {/* 사이드바 */}
-        <div className="w-64 h-full bg-neutral-800 p-3 flex flex-col items-center">
+        <div className="w-64 h-full bg-neutral-800 p-3 flex flex-col items-center overflow-hidden">
           <button
             className="w-full flex justify-center items-center p-3 rounded border-[1px] border-neutral-600 hover:bg-neutral-600 mb-3"
             onClick={createChatRoom}
@@ -282,7 +282,7 @@ function App() {
             <p className="ml-2 text-white">New Chat</p>
           </button>
 
-          <div className="flex-1 w-full overflow-scroll flex flex-col space-y-2">
+          <div className="flex-1 w-full overflow-scroll scrollbar-hide flex flex-col space-y-2">
             {chatRooms
               .slice()
               .reverse()
@@ -391,7 +391,7 @@ function App() {
         <div className="flex-1 h-full flex flex-col">
           {/* 채팅창 */}
           <div
-            className="flex-1 overflow-scroll"
+            className="flex-1 overflow-scroll scrollbar-hide"
             ref={chatWindowRef}
             onScroll={() => {
               if (chatWindowRef.current) {

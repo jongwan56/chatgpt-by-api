@@ -994,6 +994,7 @@ __metadata:
     prettier: 2.8.4
     react: 18.2.0
     react-dom: 18.2.0
+    tailwind-scrollbar-hide: 1.1.7
     tailwindcss: 3.2.7
     typescript: 5.0.2
     vite: 4.2.0
@@ -3634,6 +3635,13 @@ __metadata:
     "@pkgr/utils": ^2.3.1
     tslib: ^2.5.0
   checksum: 8a9560e5d8f3d94dc3cf5f7b9c83490ffa30d320093560a37b88f59483040771fd1750e76b9939abfbb1b5a23fd6dfbae77f6b338abffe7cae7329cd9b9bb86b
+  languageName: node
+  linkType: hard
+
+"tailwind-scrollbar-hide@npm:1.1.7":
+  version: 1.1.7
+  resolution: "tailwind-scrollbar-hide@npm:1.1.7"
+  checksum: 2434a1db7a92fa91952ce4fbef7f80b83f121fa2fae27453cefc6030c06d368768e3172d3640ae6836fe4f813ed89b40c2f44b1f17756593ab4625259ef22a75
   languageName: node
   linkType: hard
 
